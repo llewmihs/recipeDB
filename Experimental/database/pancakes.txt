@@ -1,0 +1,4 @@
+butter;100
+eggs;1
+milk;30
+sugar;200
