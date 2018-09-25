@@ -12,16 +12,26 @@ onlyfiles = [f for f in listdir("database") if isfile(join("database", f))]
 
 # initiate the recipe list
 rList = {}
-
 # initiate the shopping list
 sList = {}
-
 # initalise an index for the recipes
 index = 1
-
+# days of the week list
+days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri','Sat','Sun']
 for items in onlyfiles:
     rList.update({index:items})
     index += 1
+
+# set up the loop through the days of the week
+startDay = input("What is the first day of your food week? Mon, Tue, Wed, Thu, etc.")
+
+#find the index of the start day
+dIndex = days.index(startDay)
+
+for i in range(7):
+    dIndex = days.index(startDay)
+    print(days[i])
+
 
 print(rList)
 choice = int(input("Which recipe would you like to add?  "))
