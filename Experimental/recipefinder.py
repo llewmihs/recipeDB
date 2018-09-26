@@ -3,6 +3,16 @@ from os import listdir
 from os.path import isfile, join
 onlyfiles = [f for f in listdir("database") if isfile(join("database", f))]
 
+from itertools import cycle, islice, dropwhile
+
+import gkeepapi
+
+from creds import usr, pss
+
+keep = gkeepapi.Keep()
+success = keep.login(usr, pss)
+
+
 # so this prints all files in this format ['recipe1'.txt,'recipe2.txt']
 #print(onlyfiles)
 
@@ -14,6 +24,8 @@ onlyfiles = [f for f in listdir("database") if isfile(join("database", f))]
 rList = {}
 # initiate the shopping list
 sList = {}
+# initiate a meals dict
+meals = []
 # initalise an index for the recipes
 index = 1
 # days of the week list
@@ -24,36 +36,45 @@ for items in onlyfiles:
 
 # set up the loop through the days of the week
 startDay = input("What is the first day of your food week? Mon, Tue, Wed, Thu, etc.")
+print()
 
 #find the index of the start day
+# this next bit reorders the days list for simple iteration through later
 dIndex = days.index(startDay)
-
-for i in range(7):
-    dIndex = days.index(startDay)
-    print(days[i])
-
+cycled = cycle(days)
+skipped = dropwhile(lambda x: x != startDay, cycled)
+sliced = islice(skipped, None, 7)
+days = list(sliced)
 
 print(rList)
-choice = int(input("Which recipe would you like to add?  "))
-#print(type(choice))
-# How to return a recipe from a number
-print(rList[choice])
 
-# now i need to open the recipe
-path = str("database/" + rList[choice])
-# f = open(path,"r")
+for i in range(7):
+    meal = int(input("What would you like to eat on %s ?   " % days[i]))
+    # add the meal to a list of meals for the week
+    meals.append(rList[meal])
+    # now retrieve the ingredients for that meal
+    path = str("database/" + rList[meal])
+    lines = [line.rstrip('\n') for line in open(path)]
+    for item in lines:
+        split = item.split(';')
+        if not split[0] in sList:
+            sList[split[0]] = int(split[1])
+        else:
+            sList[split[0]] += int(split[1])
 
-lines = [line.rstrip('\n') for line in open(path)]
-
-# excellent i now have the ingredients in a list that looks
-# like this ['chicken breast;4', 'butter;200', 'eggs;3', 'milk;300']
-
-for item in lines:
-    split = item.split(';')
-    print(split)
-    if not split[0] in sList:
-        sList[split[0]] = int(split[1])
-    else:
-        sList[split[0]] += int(split[1])
+for i in range(7):
+    print(days[i]+ "  " + meals[i])
 
 print(sList)
+
+keepTasks=[]
+
+for items in sList:
+    keepTasks.append((items + " " + str(sList[items]), False))
+
+glist = keep.createList('Shopping List', keepTasks)
+glist.pinned = True
+
+keep.sync()
+
+# print(keepTasks)
