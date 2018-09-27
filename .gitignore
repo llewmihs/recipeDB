@@ -1,1 +1,3 @@
 creds.py
+client_secret.json
+*.json
